@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Image } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -20,11 +20,11 @@ import Logo from '../../assets/logo.png';
 const Home: React.FC = () => {
   const navigation = useNavigation();
 
-  async function handleNavigate(): Promise<void> {
+  const handleNavigate = useCallback(() => {
     navigation.navigate('MainBottom', {
       screen: 'Dashboard',
     });
-  }
+  }, [navigation]);
 
   return (
     <BackgroundImage

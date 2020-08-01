@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Image, ScrollView } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Feather';
@@ -33,6 +33,7 @@ interface Food {
   name: string;
   description: string;
   price: number;
+  category: number;
   thumbnail_url: string;
   formattedPrice: string;
 }
@@ -53,29 +54,61 @@ const Dashboard: React.FC = () => {
 
   const navigation = useNavigation();
 
-  async function handleNavigate(id: number): Promise<void> {
-    // Navigate do ProductDetails page
-  }
+  const handleNavigate = useCallback(
+    async (id: number) => {
+      navigation.navigate('FoodDetails', { id });
+    },
+    [navigation],
+  );
 
   useEffect(() => {
-    async function loadFoods(): Promise<void> {
-      // Load Foods from API
+    let params = {};
+
+    if (selectedCategory) {
+      params = {
+        ...params,
+        category_like: selectedCategory,
+      };
     }
 
-    loadFoods();
+    if (searchValue) {
+      params = {
+        ...params,
+        name_like: searchValue,
+      };
+    }
+
+    api
+      .get<Food[]>('foods', { params })
+      .then(response => {
+        const formattedFoods = response.data.map(
+          food =>
+            ({
+              ...food,
+              formattedPrice: formatValue(food.price),
+            } as Food),
+        );
+
+        setFoods(formattedFoods);
+      });
   }, [selectedCategory, searchValue]);
 
   useEffect(() => {
-    async function loadCategories(): Promise<void> {
-      // Load categories from API
-    }
-
-    loadCategories();
+    api
+      .get<Category[]>('categories')
+      .then(response => setCategories(response.data));
   }, []);
 
-  function handleSelectCategory(id: number): void {
-    // Select / deselect category
-  }
+  const handleSelectCategory = useCallback(
+    (id: number) => {
+      if (selectedCategory === id) {
+        setSelectedCategory(0);
+      } else {
+        setSelectedCategory(id);
+      }
+    },
+    [selectedCategory],
+  );
 
   return (
     <Container>
